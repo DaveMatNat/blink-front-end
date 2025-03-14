@@ -11,6 +11,7 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import { Inter } from "next/font/google";
 import Script from "next/script";
+import { EventInput } from '@fullcalendar/core';
 
 declare global {
   interface Window {
@@ -428,33 +429,30 @@ export default function Home() {
   // ---------------------------------------------------
 
   // Convert selected courses into FullCalendar events, using consistent colors from courseColors
-  const events = selectedCourses.flatMap((course) =>
-    course.meetingsFaculty?.map((meeting) => {
-      if (!meeting.meetingTime) return null;
-
-      // Get the consistent random color for this course
-      const randomColor = courseColors[course.courseReferenceNumber];
+  const events = useMemo<EventInput[]>(() => selectedCourses.flatMap((course) =>
+    (course.meetingsFaculty || []).flatMap((meeting) => {
+      if (!meeting.meetingTime) return [];
 
       const { beginTime, endTime, monday, tuesday, wednesday, thursday, friday } = meeting.meetingTime;
       const days = [monday, tuesday, wednesday, thursday, friday];
+      const randomColor = courseColors[course.courseReferenceNumber];
 
       return days
         .map((day, index) =>
-          day
-            ? {
-                title: course.courseTitle,
-                startTime: beginTime ? `${beginTime.substring(0, 2)}:${beginTime.substring(2)}` : "00:00",
-                endTime: endTime ? `${endTime.substring(0, 2)}:${endTime.substring(2)}` : "00:00",
-                daysOfWeek: [index + 1], // 1 = Monday, 2 = Tuesday, etc.
-                backgroundColor: randomColor,  // Use the pre-assigned random color
-                borderColor: randomColor,
-                textColor: "#fff",
-              }
-            : null
+          day ? {
+            title: course.courseTitle,
+            daysOfWeek: [index + 1], // 1 = Monday, 2 = Tuesday, etc.
+            startTime: beginTime ? `${beginTime.substring(0, 2)}:${beginTime.substring(2)}` : undefined,
+            endTime: endTime ? `${endTime.substring(0, 2)}:${endTime.substring(2)}` : undefined,
+            start: '2024-01-01', // A default start date is required
+            backgroundColor: randomColor,
+            borderColor: randomColor,
+            textColor: "#fff"
+          } : null
         )
-        .filter(Boolean);
+        .filter((event): event is NonNullable<typeof event> => event !== null && event.startTime !== undefined && event.endTime !== undefined);
     })
-  ).flat();
+  ).filter(Boolean), [selectedCourses, courseColors]);
 
   // Function to convert time string to ICS format
   const formatTimeForICS = (time: string) => {
@@ -1000,30 +998,24 @@ END:VEVENT
                 </div>
                 <div className="overflow-x-auto">
                   <div className="w-full">
-                    <div className="w-full">
-          <FullCalendar
-            plugins={[dayGridPlugin, timeGridPlugin]}
-            initialView="timeGridWeek"
-            events={events}
-            allDaySlot={false}
-            slotMinTime="07:00:00"
-            slotMaxTime="22:00:00"
+                    <div className="rounded-xl overflow-hidden">
+                      <FullCalendar
+                        plugins={[dayGridPlugin, timeGridPlugin]}
+                        initialView="timeGridWeek"
+                        events={events}
+                        allDaySlot={false}
+                        slotMinTime="07:00:00"
+                        slotMaxTime="22:00:00"
                         headerToolbar={{
                           left: 'prev,next today',
                           center: 'title',
                           right: 'timeGridWeek,timeGridDay'
                         }}
                         height="auto"
-                        className="rounded-xl overflow-hidden"
-                        slotLabelClassNames="text-xs sm:text-base"
-                        eventClassNames="text-xs sm:text-base"
-                        headerToolbarClassNames="text-xs sm:text-base"
                         buttonText={{
                           today: 'Today',
-                          month: 'Month',
                           week: 'Week',
-                          day: 'Day',
-                          list: 'List'
+                          day: 'Day'
                         }}
                         slotLabelFormat={{
                           hour: '2-digit',
@@ -1032,14 +1024,11 @@ END:VEVENT
                         }}
                         expandRows={true}
                         stickyHeaderDates={true}
-                        dayHeaderClassNames="myDayHeader"//dayHeaderClassNames="text-xs sm:text-base font-medium"
-                        slotLaneClassNames="min-h-[2.5rem] sm:min-h-[4rem]"
                         eventTimeFormat={{
                           hour: '2-digit',
                           minute: '2-digit',
                           hour12: true
                         }}
-                        buttonClassNames="text-xs sm:text-base px-2 sm:px-3 py-1 sm:py-2"
                         titleFormat={{
                           month: 'short',
                           day: 'numeric',
@@ -1061,10 +1050,10 @@ END:VEVENT
                             }
                           }
                         }}
-          />
-        </div>
-      </div>
-    </div>
+                      />
+                    </div>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
