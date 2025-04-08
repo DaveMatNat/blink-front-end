@@ -12,7 +12,6 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import { Inter } from "next/font/google";
 import Script from "next/script";
 import { EventInput } from '@fullcalendar/core';
-
 declare global {
   interface Window {
     gapi: any;
@@ -440,13 +439,13 @@ export default function Home() {
       return days
         .map((day, index) =>
           day ? {
-            title: course.courseTitle,
-            daysOfWeek: [index + 1], // 1 = Monday, 2 = Tuesday, etc.
+                title: course.courseTitle,
+                daysOfWeek: [index + 1], // 1 = Monday, 2 = Tuesday, etc.
             startTime: beginTime ? `${beginTime.substring(0, 2)}:${beginTime.substring(2)}` : undefined,
             endTime: endTime ? `${endTime.substring(0, 2)}:${endTime.substring(2)}` : undefined,
             start: '2024-01-01', // A default start date is required
             backgroundColor: randomColor,
-            borderColor: randomColor,
+                borderColor: randomColor,
             textColor: "#fff"
           } : null
         )
@@ -999,13 +998,13 @@ END:VEVENT
                 <div className="overflow-x-auto">
                   <div className="w-full">
                     <div className="rounded-xl overflow-hidden">
-                      <FullCalendar
-                        plugins={[dayGridPlugin, timeGridPlugin]}
-                        initialView="timeGridWeek"
-                        events={events}
-                        allDaySlot={false}
-                        slotMinTime="07:00:00"
-                        slotMaxTime="22:00:00"
+          <FullCalendar
+            plugins={[dayGridPlugin, timeGridPlugin]}
+            initialView="timeGridWeek"
+            events={events}
+            allDaySlot={false}
+            slotMinTime="07:00:00"
+            slotMaxTime="22:00:00"
                         headerToolbar={{
                           left: 'prev,next today',
                           center: 'title',
@@ -1050,10 +1049,10 @@ END:VEVENT
                             }
                           }
                         }}
-                      />
-                    </div>
-                  </div>
-                </div>
+          />
+        </div>
+      </div>
+    </div>
               </div>
             </div>
           </div>
